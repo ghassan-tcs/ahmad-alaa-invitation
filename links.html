@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>روابط المعازيم</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+  :root{ --night:#0B2620; --panel:#10322A; --gold:#C9A15E; --gold-lt:#E7CF9E;
+         --ivory:#F6F1E4; --muted:#9DB3A9; --line:rgba(201,161,94,.24); }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--night);color:var(--ivory);
+       font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
+       line-height:1.8;padding:28px 16px 60px}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  input[type=text]{
+    flex:1 1 260px;min-width:0;padding:10px 12px;font:inherit;font-size:13.5px;
+    color:var(--ivory);background:rgba(0,0,0,.25);
+    border:1px solid var(--line);border-radius:4px;direction:ltr;text-align:left}
+  input[type=text]:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .count{color:var(--muted);font-size:13px}
+  ul{list-style:none;display:grid;gap:9px}
+  li{display:flex;gap:11px;align-items:center;flex-wrap:wrap;
+     background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:12px 14px}
+  .who{flex:1 1 190px;min-width:0}
+  .who b{display:block;font-weight:600;font-size:15px}
+  .who span{display:block;color:var(--muted);font-size:12px;direction:ltr;text-align:left;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .go{display:flex;gap:7px;flex:none}
+  button,a.act{
+    font:inherit;font-size:13px;cursor:pointer;text-decoration:none;
+    padding:8px 13px;border-radius:3px;border:1px solid var(--gold);
+    background:transparent;color:var(--gold-lt);transition:background .15s ease}
+  button:hover,a.act:hover{background:rgba(201,161,94,.15)}
+  button.done{background:var(--gold);color:#12251F;border-color:var(--gold)}
+  button:focus-visible,a.act:focus-visible{outline:2px solid var(--gold-lt);outline-offset:2px}
+  .warn{background:rgba(120,40,20,.35);border:1px solid rgba(220,120,80,.45);
+        border-radius:4px;padding:12px 14px;font-size:13.5px;color:#E9B7A0}
+  code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:3px;direction:ltr;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>روابط المعازيم</h1>
+  <p class="sub">لكل ضيف رابطه الخاص الذي يحمل اسمه. انسخه وأرسله له.</p>
+
+  <div class="bar">
+    <input type="text" id="base" spellcheck="false" aria-label="عنوان الموقع المنشور">
+    <span class="count" id="count"></span>
+  </div>
+
+  <ul id="list"></ul>
+  <p class="warn" id="warn" hidden></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var listEl  = document.getElementById('list');
+  var baseEl  = document.getElementById('base');
+  var countEl = document.getElementById('count');
+  var warnEl  = document.getElementById('warn');
+
+  // العنوان الافتراضي هو مجلّد هذه الصفحة نفسها — يعمل محلياً وعلى GitHub Pages.
+  baseEl.value = location.href.replace(/links\.html.*$/, '') || location.origin + '/';
+
+  var guests = [];
+
+  var linkFor = function (guest) {
+    return baseEl.value.replace(/\/?$/, '/') + 'index.html?g=' + encodeURIComponent(guest.id);
+  };
+
+  var label = function (guest) {
+    return [guest.prefix, guest.name, guest.suffix]
+      .map(function (p) { return (p || '').trim(); })
+      .filter(Boolean).join(' ');
+  };
+
+  var copy = function (text, btn) {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = 'نُسخ ✓';
+      btn.classList.add('done');
+      setTimeout(function () { btn.textContent = old; btn.classList.remove('done'); }, 1400);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+    } else {
+      fallback(text, done);
+    }
+  };
+
+  // ‏clipboard API لا يعمل على http غير الآمن — فهذا المسار ضروري محلياً.
+  var fallback = function (text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { window.prompt('انسخ الرابط:', text); }
+    document.body.removeChild(ta);
+  };
+
+  var render = function () {
+    listEl.innerHTML = '';
+    countEl.textContent = guests.length + ' ضيفاً';
+
+    guests.forEach(function (guest) {
+      var url = linkFor(guest);
+
+      var li = document.createElement('li');
+
+      var who = document.createElement('div');
+      who.className = 'who';
+      var b = document.createElement('b');
+      b.textContent = label(guest);
+      var s = document.createElement('span');
+      s.textContent = url;
+      who.appendChild(b);
+      who.appendChild(s);
+
+      var go = document.createElement('div');
+      go.className = 'go';
+
+      var copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.textContent = 'نسخ';
+      copyBtn.addEventListener('click', function () { copy(url, copyBtn); });
+
+      var openLink = document.createElement('a');
+      openLink.className = 'act';
+      openLink.href = url;
+      openLink.target = '_blank';
+      openLink.rel = 'noopener';
+      openLink.textContent = 'فتح';
+
+      var wa = document.createElement('a');
+      wa.className = 'act';
+      wa.href = 'https://wa.me/?text=' + encodeURIComponent(label(guest) + '\n' + url);
+      wa.target = '_blank';
+      wa.rel = 'noopener';
+      wa.textContent = 'واتساب';
+
+      go.appendChild(copyBtn);
+      go.appendChild(openLink);
+      go.appendChild(wa);
+
+      li.appendChild(who);
+      li.appendChild(go);
+      listEl.appendChild(li);
+    });
+  };
+
+  baseEl.addEventListener('input', render);
+
+  fetch('data/guests.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.json(); })
+    .then(function (file) { guests = file['الضيوف'] || []; render(); })
+    .catch(function () {
+      warnEl.hidden = false;
+      warnEl.innerHTML = (location.protocol === 'file:')
+        ? 'افتح هذه الصفحة عبر خادم لا بنقرة مزدوجة: <code>http://localhost/ahmad-alaa-invitation/links.html</code>'
+        : 'تعذّرت قراءة <code>data/guests.json</code>.';
+    });
+})();
+</script>
+</body>
+</html>
