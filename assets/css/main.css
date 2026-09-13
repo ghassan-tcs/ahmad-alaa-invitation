@@ -225,23 +225,52 @@ body{
 /* ══════════ الاسمان — اللحظة المميّزة ══════════ */
 
 .couple{margin-bottom:var(--s6)}
+/* الاسم يُكتب بالورد: كشفٌ متدرّج من اليمين لليسار.
+   ولا يُقسَّم إلى حروف أبداً — تقسيم العربية يكسر اتّصال الخطّ. */
+.ink{display:inline-block;position:relative;max-width:100%}
+
 .name{
   font-family:"Aref Ruqaa",serif;font-weight:700;
   font-size:clamp(28px,8.8vw,37px);line-height:1.55;
   color:var(--rose-700);
   text-wrap:balance;
-  position:relative;
-  background-image:linear-gradient(100deg,
-      transparent 32%, rgba(255,255,255,.86) 48%, transparent 64%);
-  background-size:230% 100%;
-  background-repeat:no-repeat;
-  background-position:220% 0;
-  -webkit-background-clip:text;background-clip:text;
 }
-/* بريقٌ يمرّ مرّة واحدة على كل اسم — توقيعُ اللحظة لا زينة دائمة */
-.name.shine{animation:shine 1.5s var(--ease) forwards}
-#bride.shine{animation-delay:.22s}
-@keyframes shine{ to{background-position:-120% 0} }
+/* الإخفاء يضعه JS لا CSS — فلو تعطّل JS ظهر الاسم كاملاً. */
+.ink.writing .name{
+  clip-path:inset(-12% 0 -12% 100%);
+  animation:write var(--dur,2.4s) var(--ease-out) var(--start,0s) forwards;
+}
+@keyframes write{ to{clip-path:inset(-12% 0 -12% 0)} }
+
+/* الوردة التي تسير على طرف الكتابة */
+.pen{
+  position:absolute;top:50%;left:100%;
+  width:19px;height:22px;margin-inline-start:-10px;
+  opacity:0;pointer-events:none;
+  transform:translateY(-52%);
+}
+.ink.writing .pen{animation:penrun var(--dur,2.4s) var(--ease-out) var(--start,0s) forwards}
+.pen svg{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 3px rgba(165,68,96,.3))}
+@keyframes penrun{
+  0%  {left:100%;opacity:0;transform:translateY(-52%) rotate(-14deg) scale(.7)}
+  9%  {opacity:1;transform:translateY(-52%) rotate(-6deg) scale(1)}
+  88% {opacity:1}
+  100%{left:0%;opacity:0;transform:translateY(-52%) rotate(10deg) scale(.72)}
+}
+
+/* ورداتٌ صغيرة تتفتّح في أثر الكتابة */
+.bloom{
+  position:absolute;bottom:-2px;
+  width:11px;height:13px;
+  opacity:0;transform:scale(.2) rotate(-30deg);pointer-events:none;
+}
+.ink.writing .bloom{animation:bloom .9s var(--ease-out) var(--at,0s) forwards}
+.bloom svg{display:block;width:100%;height:auto}
+@keyframes bloom{
+  0%  {opacity:0;transform:scale(.2) rotate(-30deg)}
+  55% {opacity:.95;transform:scale(1.14) rotate(6deg)}
+  100%{opacity:.8;transform:scale(1) rotate(0)}
+}
 
 .amp{margin:var(--s2) auto;width:88px;color:var(--rose-400)}
 .amp svg{display:block;width:100%;height:auto}
@@ -358,7 +387,11 @@ body{
 
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
-  .reveal,.sky::before,.unit b.roll,.name.shine{animation:none}
+  .reveal,.sky::before,.unit b.roll{animation:none}
+  /* الاسم يظهر كاملاً بلا كتابة، والوردة السائرة تُحذف */
+  .ink.writing .name{clip-path:none;animation:none}
+  .pen{display:none}
+  .bloom{animation:none;opacity:.8;transform:none}
   .petals{display:none}
   .frame rect,.corner path,.corner circle,.rule line,.rule path,.rule circle,
   .amp path,.amp line,.seal circle{stroke-dashoffset:0;animation:none}
@@ -383,4 +416,6 @@ body{
   .frame rect,.corner path,.corner circle,.rule line,.rule path,.rule circle,
   .amp path,.amp line,.seal circle{stroke-dashoffset:0;animation:none}
   .corner{opacity:.7;animation:none}
+  .ink.writing .name{clip-path:none;animation:none}
+  .pen,.bloom{display:none}
 }

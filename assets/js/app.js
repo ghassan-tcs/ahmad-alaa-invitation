@@ -149,6 +149,71 @@
     for (i = 0; i < nearCount; i++) { near.appendChild(makePetal(i, nearCount, true)); }
   }
 
+  /* ---------- الاسمان يُكتبان بالورد ----------
+     الكشف متدرّج من اليمين لليسار على النصّ كاملاً — ولا يُقسَّم إلى
+     حروف أبداً: تقسيم العربية إلى عناصر يكسر اتّصال الخطّ فتنفصل
+     «أحمد» إلى أ ح م د. ووردةٌ تسير على طرف الكشف، ووردات صغيرة
+     تتفتّح في أثرها.                                                */
+
+  var ROSE_SVG =
+    '<svg viewBox="0 0 20 24" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M10 23 C10 18 9 15 6.5 12.5" stroke="#B98C6E" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+      '<path d="M6.6 13.4 C3.6 13 2 11 2.2 8.6 C5 8.8 6.8 10.6 6.6 13.4 Z" fill="#CDA98C" opacity=".85"/>' +
+      '<path d="M10 1.6 C14.6 1.6 17.6 4.8 17.6 8.6 C17.6 12.6 14.2 15.4 10 15.4 C5.8 15.4 2.4 12.6 2.4 8.6 C2.4 4.8 5.4 1.6 10 1.6 Z" fill="#E5A3B7"/>' +
+      '<path d="M10 3.4 C13.2 3.4 15.4 5.6 15.4 8.4 C15.4 11.2 13 13.4 10 13.4 C7 13.4 4.6 11.2 4.6 8.4 C4.6 5.6 6.8 3.4 10 3.4 Z" fill="#D67D97"/>' +
+      '<path d="M10 5.6 C12 5.6 13.4 7 13.4 8.6 C13.4 10.4 12 11.6 10 11.6 C8 11.6 6.6 10.4 6.6 8.6 C6.6 7 8 5.6 10 5.6 Z" fill="#C25A78"/>' +
+      '<path d="M10 7.4 C11.1 7.6 11.8 8.4 11.6 9.4 C10.4 9.6 9.4 9 9.2 8.2 Z" fill="#A54460"/>' +
+    '</svg>';
+
+  var BUD_SVG =
+    '<svg viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M6 13.6 C6 10.6 5.4 9 4 7.8" stroke="#B98C6E" stroke-width=".9" fill="none" stroke-linecap="round"/>' +
+      '<path d="M6 .8 C8.9 .8 10.8 2.8 10.8 5.2 C10.8 7.7 8.7 9.4 6 9.4 C3.3 9.4 1.2 7.7 1.2 5.2 C1.2 2.8 3.1 .8 6 .8 Z" fill="#F2C8D5"/>' +
+      '<path d="M6 2.4 C7.9 2.4 9.2 3.8 9.2 5.3 C9.2 7 7.7 8 6 8 C4.3 8 2.8 7 2.8 5.3 C2.8 3.8 4.1 2.4 6 2.4 Z" fill="#E5A3B7"/>' +
+      '<path d="M6 4.2 C6.9 4.3 7.4 4.9 7.3 5.6 C6.5 5.7 5.9 5.3 5.8 4.8 Z" fill="#C25A78"/>' +
+    '</svg>';
+
+  function writeOne(id, startSec, durSec) {
+    var name = $(id);
+    if (!name || !name.parentNode) { return; }
+
+    // غلافٌ يحتضن عرض النصّ وحده — فالكشف يبدأ من أول حرف لا من حافة البطاقة.
+    var ink = document.createElement('div');
+    ink.className = 'ink';
+    ink.style.setProperty('--start', startSec + 's');
+    ink.style.setProperty('--dur', durSec + 's');
+    name.parentNode.insertBefore(ink, name);
+    ink.appendChild(name);
+
+    if (calm) { return; }
+
+    var pen = document.createElement('span');
+    pen.className = 'pen';
+    pen.setAttribute('aria-hidden', 'true');
+    pen.innerHTML = ROSE_SVG;
+    ink.appendChild(pen);
+
+    // كل وردة تتفتّح لحظة مرور القلم بها: القلم يمشي يميناً⟵يساراً،
+    // فالوردة عند 84% من اليسار يمرّ بها أوّلاً.
+    [84, 66, 48, 30, 14].forEach(function (leftPct) {
+      var bud = document.createElement('span');
+      bud.className = 'bloom';
+      bud.setAttribute('aria-hidden', 'true');
+      bud.style.left = leftPct + '%';
+      bud.style.setProperty('--at', (startSec + durSec * (1 - leftPct / 100) * 0.94).toFixed(2) + 's');
+      bud.innerHTML = BUD_SVG;
+      ink.appendChild(bud);
+    });
+
+    ink.classList.add('writing');
+  }
+
+  function writeNames() {
+    // الثاني يبدأ بعد أن يفرغ الأول — كسطرين يُكتبان بالتتابع.
+    writeOne('groom', 1.0, 2.4);
+    writeOne('bride', 3.6, 2.4);
+  }
+
   /* ---------- العدّاد ---------- */
 
   /* الرقم يتدحرج فقط حين يتغيّر فعلاً — لا كل ثانية على الأربعة. */
@@ -285,15 +350,7 @@
     setText('initialGroom', cfg['حرف_العريس'] || (cfg['العريس'] || '').charAt(0));
     setText('initialBride', cfg['حرف_العروس'] || (cfg['العروس'] || '').charAt(0));
 
-    // البريق يمرّ على الاسمين بعد استقرار الدخول — مرّة واحدة لا حلقة.
-    if (!calm) {
-      setTimeout(function () {
-        ['groom', 'bride'].forEach(function (id) {
-          var el = $(id);
-          if (el) { el.classList.add('shine'); }
-        });
-      }, 1150);
-    }
+    writeNames();
 
     var map = $('mapBtn');
     if (map) {
