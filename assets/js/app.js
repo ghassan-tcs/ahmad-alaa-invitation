@@ -62,12 +62,97 @@
     return composeGuest(match) || fallback;
   }
 
-  /* ---------- العدّاد ---------- */
-
   var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* ---------- تساقط الورد ----------
+     ثلاثة أشكال بألوان اللوحة نفسها. العمق يُصنع بثلاثة أمور معاً:
+     الحجم، والضبابية، والطبقة (خلف البطاقة أم أمامها) — فالصغيرة
+     الباهتة تبدو بعيدة والكبيرة الحادّة قريبة.                     */
+
+  var PETAL_SHAPES = [
+    // بتلة مدبّبة
+    'M12 .8 C19.5 6 22.6 14.4 15.8 24.6 C13.6 28 10.4 28 8.2 24.6 C1.4 14.4 4.5 6 12 .8 Z' +
+      'M12 4.2 C9.6 9.4 9.2 16.4 12 24.2',
+    // بتلة عريضة
+    'M12 1.6 C21 4.4 24.4 13 18.6 22 C15.4 27 8.6 27 5.4 22 C-.4 13 3 4.4 12 1.6 Z' +
+      'M12 5 C14.4 11 14 18 12 23',
+    // بتلة ملتوية
+    'M13.6 1 C21.4 5.6 22.8 15 15 24 C12 27.4 8 26.4 6.6 22 C4 13.6 6.4 5.6 13.6 1 Z' +
+      'M12.4 5 C11 11.4 11.6 18 13.4 22.6'
+  ];
+
+  var PETAL_TINTS = [
+    { fill: '#F2C8D5', line: '#DE9DB1' },  // rose-200
+    { fill: '#FAE2E9', line: '#EBB6C6' },  // rose-100
+    { fill: '#E5A3B7', line: '#C87F97' },  // rose-300
+    { fill: '#F7D9CB', line: '#DEB49E' },  // شمبانيا وردية
+    { fill: '#FBEFF2', line: '#E9C4D0' }   // أفتحها — للطبقة البعيدة
+  ];
+
+  function makePetal(i, total, near) {
+    var lane = (i + 0.5) / total;                       // توزيع متساوٍ لا تكتّل
+    var jitter = (Math.random() - 0.5) * (0.8 / total);
+    var depth = near ? 0.72 + Math.random() * 0.45      // قريبة: أكبر وأوضح
+                     : 0.34 + Math.random() * 0.34;     // بعيدة: أصغر وأبهت
+
+    var el = document.createElement('span');
+    el.className = 'petal';
+    el.style.insetInlineStart = ((lane + jitter) * 100).toFixed(2) + '%';
+    el.style.width = Math.round((near ? 32 : 27) * depth) + 'px';
+    el.style.animationDuration = (near ? 17 : 26) + Math.random() * 11 + 's';
+    el.style.animationDelay = '-' + (Math.random() * 26).toFixed(1) + 's';  // سالب = السماء ممتلئة فوراً
+    el.style.setProperty('--dx', Math.round((Math.random() - 0.45) * 150) + 'px');
+    el.style.setProperty('--o', (near ? 0.9 : 0.62) * (0.75 + depth * 0.3));
+    if (!near) { el.style.filter = 'blur(' + (1.4 - depth).toFixed(2) + 'px)'; }
+
+    var inner = document.createElement('i');
+    inner.style.animationDuration = (2.6 + Math.random() * 3.4).toFixed(1) + 's';
+    inner.style.animationDelay = '-' + (Math.random() * 4).toFixed(1) + 's';
+    inner.style.setProperty('--r0', Math.round(-40 + Math.random() * 25) + 'deg');
+    inner.style.setProperty('--r1', Math.round(15 + Math.random() * 40) + 'deg');
+
+    var tint = PETAL_TINTS[Math.floor(Math.random() * PETAL_TINTS.length)];
+    var path = PETAL_SHAPES[Math.floor(Math.random() * PETAL_SHAPES.length)];
+    var cut = path.indexOf('M', 1);
+
+    inner.innerHTML =
+      '<svg viewBox="0 0 24 28" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="' + path.slice(0, cut) + '" fill="' + tint.fill + '"/>' +
+        '<path d="' + path.slice(cut) + '" fill="none" stroke="' + tint.line +
+          '" stroke-width=".7" stroke-linecap="round" opacity=".55"/>' +
+      '</svg>';
+
+    el.appendChild(inner);
+    return el;
+  }
+
+  function sowPetals() {
+    var host = $('petals');
+    if (!host || calm) { return; }
+
+    // طبقة خلف البطاقة وأخرى أمامها — العمق يُرى حين تمرّ بتلةٌ فوق الورق.
+    var far = host;
+    far.classList.add('p-far');
+
+    var near = document.createElement('div');
+    near.className = 'petals p-near';
+    near.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(near);
+
+    // الشاشة الصغيرة تأخذ عدداً أقلّ — الأداء قبل الزينة.
+    var wide = window.innerWidth >= 620;
+    var farCount = wide ? 13 : 9;
+    var nearCount = wide ? 6 : 4;
+
+    var i;
+    for (i = 0; i < farCount; i++) { far.appendChild(makePetal(i, farCount, false)); }
+    for (i = 0; i < nearCount; i++) { near.appendChild(makePetal(i, nearCount, true)); }
+  }
+
+  /* ---------- العدّاد ---------- */
+
   /* الرقم يتدحرج فقط حين يتغيّر فعلاً — لا كل ثانية على الأربعة. */
-  var setDigit = function (id, value) {
+  var setDigit = function (id, value, roll) {
     var el = $(id);
     if (!el) { return; }
 
@@ -76,7 +161,9 @@
 
     el.textContent = next;
 
-    if (calm) { return; }
+    // الثواني تتغيّر كل ثانية، ومطلعُ الدوران شفافيةٌ صفر — فلو تدحرجت
+    // لومَضت الخانة بلا انقطاع وبدت فارغة في كل لقطة.
+    if (calm || roll === false) { return; }
     el.classList.remove('roll');
     void el.offsetWidth;          // إعادة تشغيل الحركة
     el.classList.add('roll');
@@ -105,7 +192,7 @@
       setDigit('cdD', Math.floor(sec / 86400));
       setDigit('cdH', Math.floor(sec % 86400 / 3600));
       setDigit('cdM', Math.floor(sec % 3600 / 60));
-      setDigit('cdS', sec % 60);
+      setDigit('cdS', sec % 60, false);
 
       if (box) { box.hidden = false; }
       return true;
@@ -219,6 +306,7 @@
 
     startCountdown(cfg['التاريخ_والوقت']);
     wireCalendar(cfg);
+    sowPetals();
   }
 
   /* ---------- الإقلاع ---------- */

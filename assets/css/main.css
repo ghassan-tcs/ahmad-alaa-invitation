@@ -93,28 +93,35 @@ body{
 .orb-a{width:340px;height:340px;background:#FFC7AE;top:-100px;inset-inline-start:-110px}
 .orb-b{width:310px;height:310px;background:#F2A8C2;bottom:-108px;inset-inline-end:-90px}
 
-/* بتلات */
-.petals{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+/* ══════════ تساقط الورد ══════════
+   طبقتان لكل بتلة: الخارجية تهبط وتنجرف، والداخلية ترفرف حول
+   محورها. فصلُهما هو ما يجعل السقوط يبدو هواءً لا خطاً مستقيماً.
+   ‏.p-far خلف البطاقة، و.p-near أمامها فيولد عمقٌ حقيقي.        */
+
+.petals{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.petals.p-far{z-index:0}
+.petals.p-near{z-index:3}
+
 .petal{
-  position:absolute;top:-9%;
-  width:13px;height:17px;
-  background:linear-gradient(150deg, var(--rose-200), var(--rose-100));
-  border-radius:60% 0 60% 0;
-  opacity:0;filter:blur(.5px);
-  animation:fall linear infinite;
+  position:absolute;top:-14vh;
+  will-change:transform;
+  animation:drift linear infinite;
 }
-.petal:nth-child(1){inset-inline-start:8%;  animation-duration:25s; animation-delay:2s}
-.petal:nth-child(2){inset-inline-start:24%; animation-duration:31s; animation-delay:9s;  width:10px;height:13px}
-.petal:nth-child(3){inset-inline-start:42%; animation-duration:27s; animation-delay:15s}
-.petal:nth-child(4){inset-inline-start:59%; animation-duration:34s; animation-delay:5s;  width:9px; height:12px}
-.petal:nth-child(5){inset-inline-start:75%; animation-duration:28s; animation-delay:20s}
-.petal:nth-child(6){inset-inline-start:90%; animation-duration:32s; animation-delay:12s; width:11px;height:14px}
-@keyframes fall{
-  0%  {transform:translateY(-10vh) rotate(0)   translateX(0);   opacity:0}
-  10% {opacity:.5}
-  50% {transform:translateY(52vh) rotate(190deg) translateX(24px);opacity:.45}
-  90% {opacity:.28}
-  100%{transform:translateY(112vh) rotate(400deg) translateX(-12px);opacity:0}
+.petal i{
+  display:block;
+  animation:flutter ease-in-out infinite alternate;
+  transform-origin:50% 40%;
+}
+.petal svg{display:block;width:100%;height:auto}
+
+@keyframes drift{
+  0%   {transform:translate3d(0,0,0);            opacity:0}
+  6%   {opacity:var(--o,.7)}
+  100% {transform:translate3d(var(--dx,30px),128vh,0); opacity:0}
+}
+@keyframes flutter{
+  from{transform:rotate(var(--r0,-18deg)) rotateY(0deg)   scaleX(1)}
+  to  {transform:rotate(var(--r1,26deg))  rotateY(180deg) scaleX(.72)}
 }
 
 /* ══════════ البطاقة ══════════ */
@@ -352,7 +359,7 @@ body{
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .reveal,.sky::before,.unit b.roll,.name.shine{animation:none}
-  .petal{display:none}
+  .petals{display:none}
   .frame rect,.corner path,.corner circle,.rule line,.rule path,.rule circle,
   .amp path,.amp line,.seal circle{stroke-dashoffset:0;animation:none}
   .corner{opacity:.72;animation:none}
