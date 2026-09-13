@@ -141,8 +141,8 @@
 
     // الشاشة الصغيرة تأخذ عدداً أقلّ — الأداء قبل الزينة.
     var wide = window.innerWidth >= 620;
-    var farCount = wide ? 13 : 9;
-    var nearCount = wide ? 6 : 4;
+    var farCount = wide ? 19 : 14;
+    var nearCount = wide ? 9 : 6;
 
     var i;
     for (i = 0; i < farCount; i++) { far.appendChild(makePetal(i, farCount, false)); }
