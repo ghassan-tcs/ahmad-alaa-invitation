@@ -73,14 +73,22 @@
 
   <div class="inner">
 
-    <p class="bismillah reveal" style="--d:0ms">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <div class="seal reveal" style="--d:0ms" aria-hidden="true">
+      <svg viewBox="0 0 66 66" focusable="false">
+        <circle cx="33" cy="33" r="30" fill="none" stroke="currentColor" stroke-width="1"/>
+        <circle cx="33" cy="33" r="26" fill="none" stroke="currentColor" stroke-width=".5" opacity=".55"/>
+      </svg>
+      <span class="seal-letters"><i id="initialGroom"></i><span class="seal-dot"></span><i id="initialBride"></i></span>
+    </div>
 
-    <blockquote class="verse reveal" style="--d:90ms">
+    <p class="bismillah reveal" style="--d:120ms">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+
+    <blockquote class="verse reveal" style="--d:210ms">
       <p id="verse">&nbsp;</p>
       <cite id="verseSource"></cite>
     </blockquote>
 
-    <div class="rule reveal" style="--d:180ms" aria-hidden="true">
+    <div class="rule reveal" style="--d:300ms" aria-hidden="true">
       <svg viewBox="0 0 220 18" focusable="false">
         <line x1="0" y1="9" x2="82" y2="9" stroke="currentColor" stroke-width=".8"/>
         <line x1="138" y1="9" x2="220" y2="9" stroke="currentColor" stroke-width=".8"/>
@@ -92,16 +100,16 @@
     </div>
 
     <!-- اسم الضيف -->
-    <section class="guest reveal" style="--d:260ms" aria-live="polite">
+    <section class="guest reveal" style="--d:400ms" aria-live="polite">
       <p class="guest-label">دعوة خاصة إلى</p>
       <p class="guest-name" id="guestName">&nbsp;</p>
     </section>
 
-    <p class="intro reveal" style="--d:340ms">يسرّنا وتُسعدنا دعوتكم لحضور حفل</p>
-    <p class="occasion reveal" style="--d:400ms" id="occasion">&nbsp;</p>
+    <p class="intro reveal" style="--d:490ms">يسرّنا وتُسعدنا دعوتكم لحضور حفل</p>
+    <p class="occasion reveal" style="--d:560ms" id="occasion">&nbsp;</p>
 
     <!-- الاسمان -->
-    <section class="couple reveal" style="--d:470ms">
+    <section class="couple reveal" style="--d:650ms">
       <p class="name" id="groom">&nbsp;</p>
       <div class="amp" aria-hidden="true">
         <svg viewBox="0 0 90 40" focusable="false">
@@ -115,7 +123,7 @@
     </section>
 
     <!-- التفاصيل -->
-    <section class="details reveal" style="--d:560ms">
+    <section class="details reveal" style="--d:760ms">
       <div class="detail">
         <span class="detail-key">التاريخ</span>
         <span class="detail-val" id="dateText">&nbsp;</span>
@@ -129,7 +137,7 @@
     </section>
 
     <!-- العدّاد -->
-    <section class="countdown reveal" style="--d:640ms" id="countdown" hidden>
+    <section class="countdown reveal" style="--d:860ms" id="countdown" hidden>
       <div class="unit"><b id="cdD">0</b><span>يوم</span></div>
       <div class="unit"><b id="cdH">0</b><span>ساعة</span></div>
       <div class="unit"><b id="cdM">0</b><span>دقيقة</span></div>
@@ -137,12 +145,12 @@
     </section>
     <p class="arrived" id="arrived" hidden>حلّ اليوم الموعود — بانتظاركم 🤍</p>
 
-    <div class="actions reveal" style="--d:720ms">
+    <div class="actions reveal" style="--d:950ms">
       <a class="btn" id="mapBtn" href="#" target="_blank" rel="noopener">الموقع على الخريطة</a>
       <button class="btn ghost" id="icsBtn" type="button">أضِف إلى التقويم</button>
     </div>
 
-    <p class="closing reveal" style="--d:800ms" id="closing">&nbsp;</p>
+    <p class="closing reveal" style="--d:1040ms" id="closing">&nbsp;</p>
 
   </div>
 </main>

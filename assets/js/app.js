@@ -64,6 +64,24 @@
 
   /* ---------- العدّاد ---------- */
 
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* الرقم يتدحرج فقط حين يتغيّر فعلاً — لا كل ثانية على الأربعة. */
+  var setDigit = function (id, value) {
+    var el = $(id);
+    if (!el) { return; }
+
+    var next = String(value);
+    if (el.textContent === next) { return; }
+
+    el.textContent = next;
+
+    if (calm) { return; }
+    el.classList.remove('roll');
+    void el.offsetWidth;          // إعادة تشغيل الحركة
+    el.classList.add('roll');
+  };
+
   function startCountdown(isoDate) {
     var target = new Date(isoDate);
     if (isNaN(target.getTime())) {
@@ -84,10 +102,10 @@
       }
 
       var sec = Math.floor(left / 1000);
-      setText('cdD', Math.floor(sec / 86400));
-      setText('cdH', Math.floor(sec % 86400 / 3600));
-      setText('cdM', Math.floor(sec % 3600 / 60));
-      setText('cdS', sec % 60);
+      setDigit('cdD', Math.floor(sec / 86400));
+      setDigit('cdH', Math.floor(sec % 86400 / 3600));
+      setDigit('cdM', Math.floor(sec % 3600 / 60));
+      setDigit('cdS', sec % 60);
 
       if (box) { box.hidden = false; }
       return true;
@@ -175,6 +193,20 @@
     setText('closing', cfg['كلمة_ختامية']);
 
     setText('guestName', resolveGuest(guestsFile, cfg['التحية_الافتراضية'] || 'ضيفنا الكريم'));
+
+    // الختم: حرفا الاسمين. يسقط إلى أول حرف من كل اسم إن لم يُضبَطا.
+    setText('initialGroom', cfg['حرف_العريس'] || (cfg['العريس'] || '').charAt(0));
+    setText('initialBride', cfg['حرف_العروس'] || (cfg['العروس'] || '').charAt(0));
+
+    // البريق يمرّ على الاسمين بعد استقرار الدخول — مرّة واحدة لا حلقة.
+    if (!calm) {
+      setTimeout(function () {
+        ['groom', 'bride'].forEach(function (id) {
+          var el = $(id);
+          if (el) { el.classList.add('shine'); }
+        });
+      }, 1150);
+    }
 
     var map = $('mapBtn');
     if (map) {
